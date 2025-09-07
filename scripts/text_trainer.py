@@ -340,8 +340,7 @@ def main():
     warmup_limit = 5
     warmup_step = 5
 
-    # config_level = ["default","cache","flash","tuple","float","low"]
-    config_level = ["cache","flash","tuple","float","low"]
+    config_level = ["default","cache","flash","tuple","float","low"]
 
     ds_folder = "datasets"
     os.makedirs(ds_folder, exist_ok=True)
@@ -538,112 +537,112 @@ def main():
         # #     print(f"Failed to get avg runtime: {e}")
 
 
-    #     sub_train_success = False
-    #     idx = 0
+        sub_train_success = False
+        idx = 0
 
-    #     while not sub_train_success:
-    #         idx = idx+1
+        while not sub_train_success:
+            idx = idx+1
 
-    #         print(
-    #             f"TRAINING =======================================================================",
-    #             flush=True,
-    #         )
-    #         print(
-    #             f"************* Training attempt {idx} ({config_level[cdx]}) for task {args.task_id} *************",
-    #             flush=True,
-    #         )
-    #         if idx > 0:  # there was something wrong so we will reduce the batch_size
-    #             # first check if the training is OOM
-    #             if os.path.exists(log_path):
-    #                 error_type = get_error_type(log_path)
-    #                 if error_type == OOM_ERROR:
-    #                     current_batch_size = extract_value_from_cmd(
-    #                         train_cmd, "per_device_train_batch_size"
-    #                     )
-    #                     current_batch_size = int(current_batch_size)
-    #                     if current_batch_size > 1:
-    #                         new_batch_size = current_batch_size // 2
-    #                         print(
-    #                             f"Reducing batch size from {current_batch_size} to {new_batch_size}",
-    #                             flush=True,
-    #                         )
-    #                         train_cmd = replace_args_in_cmd(
-    #                             train_cmd,
-    #                             "per_device_train_batch_size",
-    #                             str(new_batch_size),
-    #                         )
-    #                         print(f"New train command: {train_cmd}", flush=True)
-    #                     else:
-    #                         print(f"batch size is 1, cannot reduce further", flush=True)
-    #                         if args.task_type == TaskType.GRPOTASK.value:
-    #                             # disable vllm
-    #                             train_cmd = replace_args_in_cmd(
-    #                                 train_cmd, "use_vllm", "False"
-    #                             )
-    #                             print(f"disable VLLM {train_cmd}", flush=True)
-    #                 elif error_type == VLLM_OOM_ERROR:
-    #                     if args.task_type == TaskType.GRPOTASK.value:
-    #                         print(f"VLLM OOM error, disable VLLM", flush=True)
-    #                         train_cmd = replace_args_in_cmd(train_cmd, "use_vllm", "False")
-    #                 elif error_type == VAR_ONCE_ERROR:
-    #                     print(f"VAR_ONCE_ERROR", flush=True)
-    #                     train_cmd = replace_args_in_cmd(train_cmd, "gradient_checkpointing", "False")
-    #                 elif error_type == CACHING_ERROR:
-    #                     print(f"CACHING_ERROR", flush=True)
-    #                     train_cmd = replace_args_in_cmd(train_cmd, "gradient_checkpointing", "False")
+            print(
+                f"TRAINING =======================================================================",
+                flush=True,
+            )
+            print(
+                f"************* Training attempt {idx} ({config_level[cdx]}) for task {args.task_id} *************",
+                flush=True,
+            )
+            if idx > 0:  # there was something wrong so we will reduce the batch_size
+                # first check if the training is OOM
+                if os.path.exists(log_path):
+                    error_type = get_error_type(log_path)
+                    if error_type == OOM_ERROR:
+                        current_batch_size = extract_value_from_cmd(
+                            train_cmd, "per_device_train_batch_size"
+                        )
+                        current_batch_size = int(current_batch_size)
+                        if current_batch_size > 1:
+                            new_batch_size = current_batch_size // 2
+                            print(
+                                f"Reducing batch size from {current_batch_size} to {new_batch_size}",
+                                flush=True,
+                            )
+                            train_cmd = replace_args_in_cmd(
+                                train_cmd,
+                                "per_device_train_batch_size",
+                                str(new_batch_size),
+                            )
+                            print(f"New train command: {train_cmd}", flush=True)
+                        else:
+                            print(f"batch size is 1, cannot reduce further", flush=True)
+                            if args.task_type == TaskType.GRPOTASK.value:
+                                # disable vllm
+                                train_cmd = replace_args_in_cmd(
+                                    train_cmd, "use_vllm", "False"
+                                )
+                                print(f"disable VLLM {train_cmd}", flush=True)
+                    elif error_type == VLLM_OOM_ERROR:
+                        if args.task_type == TaskType.GRPOTASK.value:
+                            print(f"VLLM OOM error, disable VLLM", flush=True)
+                            train_cmd = replace_args_in_cmd(train_cmd, "use_vllm", "False")
+                    elif error_type == VAR_ONCE_ERROR:
+                        print(f"VAR_ONCE_ERROR", flush=True)
+                        train_cmd = replace_args_in_cmd(train_cmd, "gradient_checkpointing", "False")
+                    elif error_type == CACHING_ERROR:
+                        print(f"CACHING_ERROR", flush=True)
+                        train_cmd = replace_args_in_cmd(train_cmd, "gradient_checkpointing", "False")
 
-    #         # empty the log file if it exists
-    #         if os.path.exists(log_path):
-    #             with open(log_path, "w") as f:
-    #                 f.write("STARTING TRAINING")
+            # empty the log file if it exists
+            if os.path.exists(log_path):
+                with open(log_path, "w") as f:
+                    f.write("STARTING TRAINING")
 
-    #         task_id = args.task_id
-    #         expected_repo_name = args.expected_repo_name
+            task_id = args.task_id
+            expected_repo_name = args.expected_repo_name
             
-    #         training_env_vars = {
-    #             "WANDB_MODE": "offline",
-    #             "WANDB_RUN_ID": f"{task_id}_{expected_repo_name}",
-    #             "WANDB_NAME": f"{task_id}_{expected_repo_name}",
-    #         }
+            training_env_vars = {
+                "WANDB_MODE": "offline",
+                "WANDB_RUN_ID": f"{task_id}_{expected_repo_name}",
+                "WANDB_NAME": f"{task_id}_{expected_repo_name}",
+            }
             
-    #         print(f"train_cmd: {train_cmd}")
+            print(f"train_cmd: {train_cmd}")
 
-    #         run_cmd_with_log(train_cmd, log_path, env_vars=training_env_vars)
+            run_cmd_with_log(train_cmd, log_path, env_vars=training_env_vars)
 
-    #         # check if the training is successfully done; it is done, the output_dir should not be empty there is at least 2 files in the submission_dir
-    #         if not os.path.exists(submission_dir) or len(os.listdir(submission_dir)) < 2:
-    #             print(f"Training failed for task {args.task_id}", flush=True)
-    #             current_batch_size = extract_value_from_cmd(
-    #                 train_cmd, "per_device_train_batch_size"
-    #             )
-    #             current_batch_size = int(current_batch_size)
-    #             if current_batch_size <= 1:
-    #                 sub_train_success = True
-    #                 train_success = False
-    #                 cdx = cdx+1
+            # check if the training is successfully done; it is done, the output_dir should not be empty there is at least 2 files in the submission_dir
+            if not os.path.exists(submission_dir) or len(os.listdir(submission_dir)) < 2:
+                print(f"Training failed for task {args.task_id}", flush=True)
+                current_batch_size = extract_value_from_cmd(
+                    train_cmd, "per_device_train_batch_size"
+                )
+                current_batch_size = int(current_batch_size)
+                if current_batch_size <= 1:
+                    sub_train_success = True
+                    train_success = False
+                    cdx = cdx+1
 
-    #         else:
-    #             print(f"Training successfully done for task {args.task_id}", flush=True)
-    #             sub_train_success = True
-    #             train_success = True
-    #             # break
+            else:
+                print(f"Training successfully done for task {args.task_id}", flush=True)
+                sub_train_success = True
+                train_success = True
+                # break
 
-    #         # print(f"Training successfully done for task {args.task_id}", flush=True)
-    #         # sub_train_success = True
-    #         # # break
+            # print(f"Training successfully done for task {args.task_id}", flush=True)
+            # sub_train_success = True
+            # # break
 
 
-    # if not train_success:
-    #     print(f"Training failed for task {args.task_id}", flush=True)
-    #     # add noise to the model
-    #     add_noise_cmd = f"python add_random_noise.py {model_path} {submission_dir}"
-    #     run_cmd_with_log(
-    #         add_noise_cmd, os.path.join(ds_folder, f"add_noise_{args.task_id}.log")
-    #     )
+    if not train_success:
+        print(f"Training failed for task {args.task_id}", flush=True)
+        # add noise to the model
+        add_noise_cmd = f"python add_random_noise.py {model_path} {submission_dir}"
+        run_cmd_with_log(
+            add_noise_cmd, os.path.join(ds_folder, f"add_noise_{args.task_id}.log")
+        )
 
-    # patch_model_metadata(submission_dir, args.model)
+    patch_model_metadata(submission_dir, args.model)
 
-    # patch_wandb_symlinks(train_cst.WANDB_LOGS_DIR)
+    patch_wandb_symlinks(train_cst.WANDB_LOGS_DIR)
 
 
 if __name__ == "__main__":
